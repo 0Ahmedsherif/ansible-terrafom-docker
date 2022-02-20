@@ -4,5 +4,3 @@
 ansible-docker.code-workspace
 
 proj-vars
-
-backend.tf
