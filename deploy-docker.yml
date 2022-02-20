@@ -1,0 +1,62 @@
+
+# note that: if python3 wasn't installed in the 'amzn linx image' use the link below to configure it.
+# https://docs.ansible.com/ansible-core/2.12/reference_appendices/interpreter_discovery.html
+---
+- name: Install docker, docker-compose.
+  hosts: docker_server
+  become: yes
+  tasks:
+    - name: Make sure docker is installed
+      yum:
+        name: docker
+        update_cache: yes
+        state: present
+    - name: Install docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
+        dest: /usr/local/bin/docker-compose
+        mode: +x
+    - name: make sure docker is running
+      systemd:
+        name: docker
+        state: started
+    - name: make sure pip is installed
+      yum:
+        name: pip
+        state: present
+    - name: make sure docker-python module is installed
+      pip:
+        name: 
+          - docker
+          - docker-compose
+        
+- name: Add ec2-user to docker group
+  hosts: docker_server
+  become: yes
+  tasks:
+    - name: add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+    - name: Reset ssh connection
+      meta: reset_connection
+
+- name: start docker containers
+  hosts: docker_server
+  vars_files:
+    - proj-vars
+  tasks:
+    - name: copy docker compose
+      copy: 
+        src: ./docker-comose.yml
+        dest: /home/ec2-user/docker-compose.yml
+    - name: docker login
+      docker_login:
+        registry_url: https://index.docker.io/v1/
+        username: doc299
+        password: "{{docker_password}}"
+    - name: start container from compose
+      community.docker.docker_compose:
+        project_src: /home/ec2-user
+        state: present   #it's the default state and >> # it's equivalent to docker-compose up 

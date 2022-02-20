@@ -1,0 +1,8 @@
+*.terraform
+*.tfvars
+
+ansible-docker.code-workspace
+
+proj-vars
+
+
