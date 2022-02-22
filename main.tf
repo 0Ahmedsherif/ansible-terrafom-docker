@@ -10,6 +10,7 @@ variable my_ip {}
 variable instance_type {}
 variable public_key_location {}
 variable env_prefix {}
+variable ssh_private_key {}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
@@ -116,10 +117,31 @@ resource "aws_instance" "myapp-server" {
   tags = {
     Name = "${var.env_prefix}-server"
   }
-}
 
+  # provisioner "local-exec" {
+  #   working_dir= "/home/ahmed/ansible-docker" # if the path of playbook wasn't the same.
+  #   command= "ansible-playbook --inventory ${self.public_ip}, --private-key ${var.ssh_private_key} --user ec2-user deploy-docker.yml" 
+  #   # the path of the playbook in the same terraform project path, if not, we have to specify the full path of the playbook.
+  # }
+  # # inventroy will replace the hosts file
+}
 
 resource "aws_key_pair" "ssh-key" {
   key_name   = "server-key"
   public_key = file(var.public_key_location)
+}
+
+# The "null_resource" resource implements the standard resource lifecycle but takes no further action.
+# The triggers argument allows specifying an arbitrary set of values that, when changed, will cause the resource to be replaced.
+# we can use it to seperat the provisioner from the instance above
+
+resource "null_resource" "configure_server" {
+  triggers= {   # optional 
+    trigger = aws_instance.myapp-server.public_ip  # this means every time the IP changes, the ansible-playbook will be executed.
+  }
+  provisioner "local-exec" {
+  working_dir= "/home/ahmed/ansible-docker" # if the path of playbook wasn't the same.
+  command= "ansible-playbook --inventory ${aws_instance.myapp-server.public_ip}, --private-key ${var.ssh_private_key} --user ec2-user deploy-docker.yml" 
+  # the path of the playbook in the same terraform project path, if not, we have to specify the full path of the playbook. # inventroy will replace the hosts file
+  }
 }

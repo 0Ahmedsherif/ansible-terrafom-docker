@@ -2,8 +2,21 @@
 # note that: if python3 wasn't installed in the 'amzn linx image' use the link below to configure it.
 # https://docs.ansible.com/ansible-core/2.12/reference_appendices/interpreter_discovery.html
 ---
+- name: wait for ssh connection 
+  hosts: all
+  tasks:
+  - name: Wait for port 22 to become open and contain "OpenSSH"
+    wait_for:
+      port: 22
+      delay: 10
+      timeout: 100
+      search_regex: OpenSSH
+      host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+    vars:
+      ansible_connection: local
+
 - name: Install docker, docker-compose.
-  hosts: docker_server
+  hosts: all
   become: yes
   tasks:
     - name: Make sure docker is installed
@@ -31,9 +44,12 @@
           - docker-compose
         
 - name: Add ec2-user to docker group
-  hosts: docker_server
+  hosts: all
   become: yes
   tasks:
+    # - name: Pause for ec2 instance initializing 
+    #   pause:
+    #     minutes: 1
     - name: add ec2-user to docker group
       user:
         name: ec2-user
@@ -43,7 +59,7 @@
       meta: reset_connection
 
 - name: start docker containers
-  hosts: docker_server
+  hosts: all
   vars_files:
     - proj-vars
   tasks:
