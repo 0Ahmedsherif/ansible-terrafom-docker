@@ -10,10 +10,12 @@ variable my_ip {}
 variable instance_type {}
 variable public_key_location {}
 variable env_prefix {}
+variable instance_count {}
 
 resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
   enable_dns_support = true
+  enable_dns_hostnames = true
   tags = {
     Name = "${var.env_prefix}-vpc"
   }
@@ -96,17 +98,16 @@ data "aws_ami" "Latest-amazon-linux-image" {
     }   
 }
 
-output "aws_ami_id" {
-  value       = data.aws_ami.Latest-amazon-linux-image.id
+output "ec2_public_ip" {
+  value       = aws_instance.myapp-server.*.public_ip
 }
 
-output "ec2_public_ip" {
-  value       = aws_instance.myapp-server.public_ip
-}
+data "aws_default_tags" "tags" {}
 
 resource "aws_instance" "myapp-server" {
   ami           = data.aws_ami.Latest-amazon-linux-image.id
   instance_type = var.instance_type
+  count = "${var.instance_count}"
   subnet_id = aws_subnet.myapp-subnet-1.id
   vpc_security_group_ids = [aws_default_security_group.default-sg.id]
   availability_zone = var.az
@@ -114,12 +115,11 @@ resource "aws_instance" "myapp-server" {
   key_name = aws_key_pair.ssh-key.key_name
 
   tags = {
-    Name = "${var.env_prefix}-server"
-  }
+    Name = "Server-${count.index + 1}"
 }
-
+}
 
 resource "aws_key_pair" "ssh-key" {
   key_name   = "server-key"
   public_key = file(var.public_key_location)
-}
+} 

@@ -3,7 +3,7 @@
 # https://docs.ansible.com/ansible-core/2.12/reference_appendices/interpreter_discovery.html
 ---
 - name: Install docker, docker-compose.
-  hosts: docker_server
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: Make sure docker is installed
@@ -31,7 +31,7 @@
           - docker-compose
         
 - name: Add ec2-user to docker group
-  hosts: docker_server
+  hosts: aws_ec2
   become: yes
   tasks:
     - name: add ec2-user to docker group
@@ -43,13 +43,13 @@
       meta: reset_connection
 
 - name: start docker containers
-  hosts: docker_server
+  hosts: aws_ec2
   vars_files:
     - proj-vars
   tasks:
     - name: copy docker compose
       copy: 
-        src: ./docker-comose.yml
+        src: ./docker-compose.yml
         dest: /home/ec2-user/docker-compose.yml
     - name: docker login
       docker_login:

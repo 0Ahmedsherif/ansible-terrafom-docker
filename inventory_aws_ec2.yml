@@ -1,0 +1,8 @@
+# inventory_aws_ec2.yml :the name must be *_aws_ec2.yml
+---
+# installing aws_ec2 plugin in a specific region
+plugin: aws_ec2
+regions:
+  - us-east-1
+# keyed_groups:   # to group the servers (ex: a group of dev servers and another one for the prod servers ..etc,)
+#   - key: tags
