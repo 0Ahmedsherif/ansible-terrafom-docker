@@ -1,6 +1,3 @@
-
-# note that: if python3 wasn't installed in the 'amzn linx image' use the link below to configure it.
-# https://docs.ansible.com/ansible-core/2.12/reference_appendices/interpreter_discovery.html
 ---
 - name: Install docker, docker-compose.
   hosts: aws_ec2
