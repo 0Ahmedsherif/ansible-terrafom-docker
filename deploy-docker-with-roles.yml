@@ -1,0 +1,46 @@
+---
+- name: Install docker, docker-compose.
+  hosts: all
+  become: yes
+  gather_facts: False
+  tasks:
+    - name: Make sure docker is installed
+      vars:
+        ansible_python_interpreter: /usr/bin/python
+      yum:
+        name: docker
+        update_cache: yes
+        state: present
+    - name: Install docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
+        dest: /usr/local/bin/docker-compose
+        mode: +x
+    - name: make sure docker is running
+      systemd:
+        name: docker
+        state: started
+    - name: make sure pip is installed
+      yum:
+        name: pip
+        state: present
+    - name: make sure docker-python module is installed
+      pip:
+        name: 
+          - docker
+          - docker-compose
+
+- name: Create new linux user
+  hosts: all
+  become: yes
+  roles:
+    - create_user
+
+- name: start docker containers
+  hosts: all
+  become: yes
+  become_user: ahmed
+  vars_files:
+    - proj-vars
+  roles:
+    - start_containers

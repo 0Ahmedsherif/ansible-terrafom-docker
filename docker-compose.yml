@@ -1,7 +1,7 @@
 version: '3'
 services:
   java-app:
-    image: doc299/my-java-maven-app
+    image: doc299/java-maven-app:2.2
     environment:
       - DB_USER=user
       - DB_PWD=pass
