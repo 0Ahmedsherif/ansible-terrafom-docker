@@ -133,7 +133,7 @@ resource "aws_key_pair" "ssh-key" {
 
 # The "null_resource" resource implements the standard resource lifecycle but takes no further action.
 # The triggers argument allows specifying an arbitrary set of values that, when changed, will cause the resource to be replaced.
-# we can use it to seperat the provisioner from the instance above
+# we can use it to separate the provisioner from the instance above
 
 resource "null_resource" "configure_server" {
   triggers= {   # optional 
